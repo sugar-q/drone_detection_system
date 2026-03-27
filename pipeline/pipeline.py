@@ -68,6 +68,8 @@ class DeblurDetPipeline:
         det_checkpoint: str,
         device: str = "auto",
         tile_size: int = 0,
+        score_thr: float = 0.3,
+        nms_thr: float = 0.5,
         skip_deblur: bool = False,
     ) -> "DeblurDetPipeline":
         """从权重路径直接构建流水线（推荐入口）。"""
@@ -86,6 +88,8 @@ class DeblurDetPipeline:
             config=det_config,
             checkpoint=det_checkpoint,
             device=device,
+            score_thr=score_thr,
+            nms_thr=nms_thr,
         )
 
         return cls(deblur, detector, skip_deblur=skip_deblur)
