@@ -85,6 +85,7 @@ def parse_args():
 
     # 检测选项
     parser.add_argument("--score-thr", type=float, default=0.3, help="检测置信度阈值")
+    parser.add_argument("--nms-thr", type=float, default=0.5, help="NMS IoU 阈值")
 
     # 输出选项
     parser.add_argument("--vis", action="store_true", help="保存三联可视化对比图")
@@ -119,6 +120,8 @@ def main():
         det_checkpoint=args.det_checkpoint,
         device=args.device,
         tile_size=args.tile_size,
+        score_thr=args.score_thr,
+        nms_thr=args.nms_thr,
         skip_deblur=args.skip_deblur,
     )
     visualizer = Visualizer()

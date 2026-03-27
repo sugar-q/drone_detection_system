@@ -176,7 +176,14 @@ class DeblurModel:
         state_dict = ckpt.get("state_dict", ckpt.get("model", ckpt))
         # 去除 'module.' 前缀（DataParallel 残留）
         state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
-        model.load_state_dict(state_dict, strict=False)
+        incompatible = model.load_state_dict(state_dict, strict=False)
+        missing = getattr(incompatible, "missing_keys", [])
+        unexpected = getattr(incompatible, "unexpected_keys", [])
+        if missing or unexpected:
+            logger.warning(
+                "Checkpoint keys mismatch: missing=%d, unexpected=%d",
+                len(missing), len(unexpected)
+            )
         return model.to(self.device)
 
     @torch.no_grad()

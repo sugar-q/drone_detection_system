@@ -110,6 +110,7 @@ class CEASCDetector:
 
         # 加载 MMDetection 模型
         self.model = self._build_model(config, checkpoint)
+        self._override_test_cfg()
         logger.info(f"CEASCDetector 已加载: {checkpoint}")
 
     def _setup_ceasc_path(self):
@@ -131,6 +132,24 @@ class CEASCDetector:
 
         model = init_detector(config, checkpoint, device=self.device)
         return model
+
+    def _override_test_cfg(self) -> None:
+        """Apply score/NMS overrides to the underlying config if possible."""
+        cfg = getattr(self.model, "cfg", None)
+        if cfg is None:
+            return
+
+        def _apply_to_test_cfg(test_cfg):
+            if not isinstance(test_cfg, dict):
+                return
+            test_cfg["score_thr"] = float(self.score_thr)
+            if "nms" in test_cfg and isinstance(test_cfg["nms"], dict):
+                test_cfg["nms"]["iou_threshold"] = float(self.nms_thr)
+
+        if "test_cfg" in cfg:
+            _apply_to_test_cfg(cfg["test_cfg"])
+        elif "model" in cfg and isinstance(cfg["model"], dict) and "test_cfg" in cfg["model"]:
+            _apply_to_test_cfg(cfg["model"]["test_cfg"])
 
     def detect(self, image: np.ndarray) -> DetectionResult:
         """
